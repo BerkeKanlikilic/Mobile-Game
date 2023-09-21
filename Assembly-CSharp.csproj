@@ -60,6 +60,7 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\GameplayElements\Cube.cs" />
     <Compile Include="Assets\Scripts\AreaAndTasks\Area.cs" />
+    <Compile Include="Assets\Scripts\UI\DynamicSortingOrder.cs" />
     <Compile Include="Assets\Scripts\Core\LocalPersistance.cs" />
     <Compile Include="Assets\Scripts\Core\GridManager.cs" />
     <Compile Include="Assets\Scripts\Core\GameManager.cs" />

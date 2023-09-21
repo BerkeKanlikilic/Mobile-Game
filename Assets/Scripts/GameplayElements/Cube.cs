@@ -29,4 +29,10 @@ public class Cube : MonoBehaviour
 
         spriteRenderer.sprite = cubeSprites[(int)cubeType];
     }
+
+    private void OnMouseDown()
+    {
+        // Notify GridManager that this cube was tapped
+        GridManager.instance.CubeTapped(this);
+    }
 }

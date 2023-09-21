@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 1718753226492183235}
   - component: {fileID: 937123323540078385}
   - component: {fileID: 6642049770000565711}
+  - component: {fileID: 718717663815011305}
   m_Layer: 0
   m_Name: Stone
   m_TagString: Untagged
@@ -27,7 +28,7 @@ Transform:
   m_GameObject: {fileID: 4302895353160938201}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.3113442, y: -0.28476873, z: 0.045594532}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -71,8 +72,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -711422093
+  m_SortingLayer: 1
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 4d547c33698216a459d31ccee2993bdd, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -102,3 +103,16 @@ MonoBehaviour:
   isAffectedByBlast: 0
   isAffectedByTNT: 1
   doesFallDown: 0
+  sprites: []
+--- !u!114 &718717663815011305
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4302895353160938201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eeab4b685da46a94ab83806fe48e9210, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

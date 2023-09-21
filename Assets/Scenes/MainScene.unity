@@ -349,6 +349,7 @@ MonoBehaviour:
   - {fileID: 4302895353160938201, guid: ddc6f4d69bf1dca47b4323920492b649, type: 3}
   - {fileID: 4398728907698151921, guid: f7cbcb4e5233ef04caa33327226fbc84, type: 3}
   gridParent: {fileID: 1479147151}
+  spriteSize: 0.6
 --- !u!4 &1520647456
 Transform:
   m_ObjectHideFlags: 0

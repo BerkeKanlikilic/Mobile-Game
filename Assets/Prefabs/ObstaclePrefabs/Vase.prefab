@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2420398930669489436}
   - component: {fileID: 811283914046136923}
   - component: {fileID: 8274788382950319578}
+  - component: {fileID: 3673336292923248601}
   m_Layer: 0
   m_Name: Vase
   m_TagString: Untagged
@@ -27,7 +28,7 @@ Transform:
   m_GameObject: {fileID: 4398728907698151921}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.3113442, y: -0.28476873, z: 0.045594532}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -71,8 +72,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -711422093
+  m_SortingLayer: 1
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 46a44cb36afb5654697b983cc500c100, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -105,3 +106,15 @@ MonoBehaviour:
   sprites:
   - {fileID: 21300000, guid: 46a44cb36afb5654697b983cc500c100, type: 3}
   - {fileID: 21300000, guid: d114421361607e04aae047214d8b2046, type: 3}
+--- !u!114 &3673336292923248601
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4398728907698151921}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eeab4b685da46a94ab83806fe48e9210, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
