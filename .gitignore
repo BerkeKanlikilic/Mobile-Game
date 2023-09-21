@@ -1,0 +1,20 @@
+# .gitignore file for Unity projects
+
+# Ignore unnecessary Unity files
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+
+# Ignore user-specific files
+*.swp
+*.user
+*.userprefs
+*.unityproj
+*.sln
+*.swm
+
+# Ignore VS Code directory
+.vscode/
