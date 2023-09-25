@@ -20,16 +20,48 @@ public class Obstacle : MonoBehaviour
     public Sprite[] sprites; // Array to hold different sprites based on health
     private SpriteRenderer spriteRenderer; // Sprite renderer component
 
+    public GridManager gridManager;
+
     private void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
 
-        // ... existing logic to set initial health based on type
+        // Setting properties based on type
+        switch (type)
+        {
+            case ObstacleType.Box:
+                isAffectedByBlast = true;
+                isAffectedByTNT = true;
+                doesFallDown = false;
+                health = 1;
+                break;
+            case ObstacleType.Stone:
+                isAffectedByBlast = false;
+                isAffectedByTNT = true;
+                doesFallDown = false;
+                health = 1;
+                break;
+            case ObstacleType.Vase:
+                isAffectedByBlast = true;
+                isAffectedByTNT = true;
+                doesFallDown = true;
+                health = 2;
+                break;
+            // Add future types here with their properties
+        }
     }
 
     // Method to handle damage taken by the obstacle
     public void TakeDamage(int damage, bool damageByTNT = false)
     {
+        Debug.Log($"Damage: {damage} Remaining HP: {health}");
+
+        // Additional condition for Vase to ensure it doesn't take more than 1 damage from a single blast
+        if (type == ObstacleType.Vase && damage > 1 && !damageByTNT)
+        {
+            damage = 1;
+        }
+
         if (damageByTNT && !isAffectedByTNT) return; // If it's TNT damage and this obstacle isn't affected by TNT, then return
         if (!damageByTNT && !isAffectedByBlast) return; // If it's blast damage and this obstacle isn't affected by blast, then return
 
@@ -56,7 +88,15 @@ public class Obstacle : MonoBehaviour
         }
     }
 
-    // Method to handle the falling behavior could go here
+    public void HandleFall()
+    {
+        // Implement the logic for the obstacle to fall down to the empty cell below.
+        // Only for obstacles that fall, i.e., Vase.
+        if (doesFallDown)
+        {
+            // Add falling logic here.
+        }
+    }
 
     // Other methods and logic for the Obstacle can go here
 }
