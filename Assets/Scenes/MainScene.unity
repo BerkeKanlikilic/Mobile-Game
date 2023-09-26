@@ -176,6 +176,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 71ed4f10dda31584a9ecfb08d53b6dbc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  levelLoader: {fileID: 211641557}
+  levelToLoad: 1
 --- !u!4 &211641559
 Transform:
   m_ObjectHideFlags: 0
@@ -338,9 +340,9 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingLayerID: 1659292105
+  m_SortingLayer: 1
+  m_SortingOrder: -999
   m_Sprite: {fileID: 21300000, guid: 63b18d4a42b78f248a87c68ef2bc2b20, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -456,15 +458,15 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingLayerID: 1659292105
+  m_SortingLayer: 1
+  m_SortingOrder: -998
   m_Sprite: {fileID: 21300000, guid: 68bfdab47b8d1de4f84be6247773f465, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 1
-  m_Size: {x: 4.6843643, y: 5.279784}
+  m_Size: {x: 4.7, y: 5.3}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -555,9 +557,9 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingLayerID: 1659292105
+  m_SortingLayer: 1
+  m_SortingOrder: -997
   m_Sprite: {fileID: 21300000, guid: 38bade06b1f23ca468d7c129c387a39d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -629,16 +631,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55fc8265c6e19504a97e59924a9bd0f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  levelLoader: {fileID: 211641557}
   cubePrefab: {fileID: 6293466275979594035, guid: f025cef338322a04c96d7632008cccd7, type: 3}
   obstaclePrefabs:
   - {fileID: 8839691220456967067, guid: a90e5982005ae6c44bf89a26c5ae48f6, type: 3}
   - {fileID: 4302895353160938201, guid: ddc6f4d69bf1dca47b4323920492b649, type: 3}
   - {fileID: 4398728907698151921, guid: f7cbcb4e5233ef04caa33327226fbc84, type: 3}
   gridParent: {fileID: 1479147151}
+  tntPrefab: {fileID: 8682392619077958118, guid: 32b66f533a376cb49b083dc1af3ce91b, type: 3}
+  gridBackground: {fileID: 1065065377}
   spriteSize: 0.5
   originOffset: {x: 0, y: -1.5}
+  margin: {x: 0.2, y: 0.3}
   fallDelay: 0.08
   fallSpeed: 7.5
+  fallDuration: 0.5
 --- !u!4 &1520647456
 Transform:
   m_ObjectHideFlags: 0
@@ -702,9 +709,9 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
+  - {fileID: 932765140}
   - {fileID: 519420032}
   - {fileID: 211641559}
   - {fileID: 1520647456}
   - {fileID: 1792307133}
   - {fileID: 1479147152}
-  - {fileID: 932765140}

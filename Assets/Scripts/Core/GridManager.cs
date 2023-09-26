@@ -6,18 +6,27 @@ public class GridManager : MonoBehaviour
 {
 
     [Header("References")]
+    [SerializeField] private LevelLoader levelLoader;
     [SerializeField] private GameObject cubePrefab;
     [SerializeField] private GameObject[] obstaclePrefabs;
     [SerializeField] private GameObject gridParent;
     [SerializeField] private GameObject tntPrefab;
+    [SerializeField] private SpriteRenderer gridBackground;
 
     [Header("Grid Settings")]
     [SerializeField] private float spriteSize = 1.0f;  // Default size to 1 unit
     [SerializeField] private Vector2 originOffset = Vector2.zero; // Default offset is 0
 
+    [Header("Grid Background Settings")]
+    [SerializeField] private Vector2 margin;
+
     [Header("Cube Settings")]
     [SerializeField] private float fallDelay = 0.0f;
     [SerializeField] private float fallSpeed = 1f;
+    [SerializeField] private float fallDuration = 0.5f;
+
+    // Debug
+    private List<Vector3> debugFallPoints = new List<Vector3>();
 
     private int gridWidth;
     private int gridHeight;
@@ -42,25 +51,12 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    void Start()
-    {
-        // dummy LevelData for testing
-        LevelData levelData = new LevelData
-        {
-            level_number = 1,
-            grid_width = 9,
-            grid_height = 10,
-            move_count = 20,
-            grid = new string[] { "bo", "bo", "bo", "bo", "bo", "bo", "bo", "bo", "bo", "bo", "bo", "bo", "bo", "bo", "bo", "bo", "bo", "bo", "bo", "bo", "bo", "bo", "bo", "bo", "bo", "bo", "bo", "r", "r", "r", "r", "g", "b", "b", "b", "b", "y", "y", "y", "y", "g", "y", "y", "y", "y", "b", "b", "b", "b", "y", "r", "r", "r", "r", "rand", "rand", "rand", "rand", "y", "rand", "rand", "rand", "rand", "rand", "rand", "rand", "rand", "rand", "rand", "rand", "rand", "rand", "rand", "rand", "rand", "rand", "rand", "rand", "rand", "rand", "rand", "rand", "rand", "rand", "rand", "rand", "rand", "rand", "rand", "rand" }
-        };
-
-        InitializeGrid(levelData);
-    }
-
     public void InitializeGrid(LevelData levelData)
     {
         gridWidth = levelData.grid_width;
         gridHeight = levelData.grid_height;
+        gridBackground.size = new Vector2(((float)gridWidth / 2) + margin.x, ((float)gridHeight / 2) + margin.y);
+
         grid = new GameObject[gridWidth, gridHeight];
 
         float totalGridWidth = gridWidth * spriteSize;
@@ -84,6 +80,8 @@ public class GridManager : MonoBehaviour
                     newCell.transform.SetParent(gridParent.transform);
 
                     Cube cubeComponent = newCell.GetComponent<Cube>();
+                    Obstacle obstacleComponent = newCell.GetComponent<Obstacle>();
+                    TNT tntComponent = newCell.GetComponent<TNT>();
                     if (cubeComponent != null)
                     {
                         // logic to update the Cube's type and sprite based on itemCode
@@ -106,8 +104,26 @@ public class GridManager : MonoBehaviour
                                 break;
                         }
                         cubeComponent.UpdateSprite();
+                        cubeComponent.setCoords(x, y);
+                    } else if (obstacleComponent != null)
+                    {
+                        // logic to update the Obstacle's type and sprite based on itemCode
+                        switch (itemCode)
+                        {
+                            case "bo":
+                                obstacleComponent.obstacleType = Obstacle.ObstacleType.Box;
+                                break;
+                            case "s":
+                                obstacleComponent.obstacleType = Obstacle.ObstacleType.Stone;
+                                break;
+                            case "v":
+                                obstacleComponent.obstacleType = Obstacle.ObstacleType.Vase;
+                                break;
+                        }
+                        obstacleComponent.setCoords(x, y);
+                    } else if (tntComponent != null){
+                        tntComponent.setCoords(x,y);
                     }
-
                     grid[x, y] = newCell;
                 }
 
@@ -115,16 +131,16 @@ public class GridManager : MonoBehaviour
             }
         }
 
-        CheckAndUpdateSprites();
+        CubeGroupFinder.ScanAndUpdateGrid(grid);
 
         // Debugging output
-        //for (int y = 0; y < gridHeight; y++)
-        //{
+        // for (int y = 0; y < gridHeight; y++)
+        // {
         //    for (int x = 0; x < gridWidth; x++)
         //    {
         //        Debug.Log($"Grid[{x},{y}] = {grid[x, y]?.name ?? "Empty"}");
         //    }
-        //}
+        // }
     }
 
     private GameObject GetPrefabBasedOnItemCode(string itemCode)
@@ -143,327 +159,141 @@ public class GridManager : MonoBehaviour
                 return obstaclePrefabs[1]; // Stone
             case "v":
                 return obstaclePrefabs[2]; // Vase
+            case "t":
+                return tntPrefab;
             default:
                 Debug.LogError("Unknown item code: " + itemCode);
                 return null;
         }
     }
 
-    public void CubeTapped(Cube tappedCube)
+    public void UpdateCell(int x, int y, GameObject newCell)
     {
-        if (isFalling) return;
+        // Debug.Log($"Updated Cell: {x}, {y}");
+        grid[x, y] = newCell;
+    }
 
-        bool isTNTCreated = false;
+    public void HandleTap(GameObject cell)
+    {
+        if(isFalling) return;
 
-        // Initialize visited array and found group list
-        visited = new bool[gridWidth, gridHeight];
-        foundGroup = new List<Cube>();
+        Cube cube = cell?.GetComponent<Cube>();
+        TNT tnt = cell?.GetComponent<TNT>();
 
-        // TODO: Get the grid position of the tapped cube (replace these)
-        int tappedX = 0;
-        int tappedY = 0;
-
-        // Find the coordinates of the tapped cube in the grid
-        for (int y = 0; y < gridHeight; y++)
+        if (cube != null)
         {
-            for (int x = 0; x < gridWidth; x++)
+            Vector2Int coords = cube.getCoords();
+
+            List<Cube> group = CubeGroupFinder.FindGroup(coords.x, coords.y, cube.cubeType, grid);
+            List<Obstacle> obstacles = CubeGroupFinder.FindAdjacentObstacles(group, grid);
+
+            if (group.Count > 1)
             {
-                // Check if grid[x, y] is not null before calling GetComponent<Cube>()
-                Cube cube = grid[x, y]?.GetComponent<Cube>();
-                if (cube == tappedCube)
+                CubeDestroyer.DestroyGroup(group);
+                CubeDestroyer.DealDamageToObstacles(obstacles, 1);
+
+                if (group.Count >= 5)
                 {
-                    tappedX = x;
-                    tappedY = y;
+                    // Create TNT at the tapped location
+                    GameObject newTNT = Instantiate(tntPrefab, new Vector3(gridOrigin.x + coords.x * spriteSize, gridOrigin.y + coords.y * spriteSize, 0), Quaternion.identity);
+                    newTNT.transform.localScale = new Vector3(spriteSize, spriteSize, 1);
+                    newTNT.transform.SetParent(gridParent.transform);
+                    // Update the grid array
+                    grid[coords.x, coords.y] = newTNT;
+                    newTNT.GetComponent<TNT>().setCoords(coords.x, coords.y);
                 }
             }
         }
-
-        // Start the DFS from the tapped cube
-        FindGroup(tappedX, tappedY, tappedCube.cubeType);
-
-        // foundGroup now contains all adjacent cubes of the same color
-
-        // If group size is 2 or more, then we remove the cubes
-        if (foundGroup.Count >= 2)
+        else if (tnt != null)
         {
-            GameObject newTNT = null;
-            // Iterate through each cube in the found group and destroy them
-            foreach (var cube in foundGroup)
+            Debug.Log("TNT tapped.");
+        }
+
+
+
+        // Handle the falling and filling of cubes
+        StartCoroutine(FallAndFill());
+    }
+
+    private List<(GameObject, Vector2Int)> CalculateFallPoints()
+    {
+        List<(GameObject, Vector2Int)> fallPoints = new List<(GameObject, Vector2Int)>();
+
+        for (int x = 0; x < gridWidth; x++)
+        {
+            int emptyCount = 0;
+
+            for (int y = 0; y < gridHeight; y++)
             {
-                isTNTCreated = false;
-                // If 5 or more cubes, place TNT at tapped cube position
-                if (foundGroup.Count >= 5)
+                if (grid[x, y] == null)
                 {
-                    if (cube == tappedCube)
+                    emptyCount++;
+                }
+                else
+                {
+                    Obstacle obstacle = grid[x, y]?.GetComponent<Obstacle>();
+                    if (obstacle != null && (obstacle.obstacleType == Obstacle.ObstacleType.Box || obstacle.obstacleType == Obstacle.ObstacleType.Stone))
                     {
-                        Debug.Log($"TNT Created at ({tappedX + 1},{tappedY + 1})");
-                        newTNT = Instantiate(tntPrefab, tappedCube.transform.position, Quaternion.identity);
-                        newTNT.transform.localScale = new Vector3(spriteSize, spriteSize, 1);
-                        newTNT.transform.SetParent(gridParent.transform);
-                        isTNTCreated = true;
+                        // Reset the empty count as we can't move cubes below this point.
+                        emptyCount = 0;
                     }
-
-                    foreach (var tempCube in foundGroup)
+                    else if (emptyCount > 0)
                     {
-                        tempCube.ActivateTNTSprite();
-                    }
-                }
-
-                int cubeX = 0, cubeY = 0;
-                // Find the grid position of the cube to be destroyed
-                for (int y = 0; y < gridHeight; y++)
-                {
-                    for (int x = 0; x < gridWidth; x++)
-                    {
-                        if (grid[x, y]?.GetComponent<Cube>() == cube)
-                        {
-                            cubeX = x;
-                            cubeY = y;
-                        }
-                    }
-                }
-
-                Destroy(cube.gameObject);
-
-                
-
-                if (!isTNTCreated)
-                {
-                    grid[cubeX, cubeY] = null; // Set the grid position to null after destroying the cube
-                } else
-                {
-                    grid[cubeX,cubeY] = newTNT;
-                }
-            }
-        }
-
-        // After destroying cubes, handle the falling cubes
-        // StartCoroutine(HandleFallingCubes());
-
-        // Debugging output to check the found group
-        if (foundGroup.Count >= 2)
-        {
-            // Debug.Log($"Found group: {foundGroup.Count} {foundGroup[0].cubeType.ToString()}");
-        }
-    }
-
-    private void BlastDamageAdjacent(int x, int y)
-    {
-        // Coordinates of adjacent cells
-        int[] adjacentX = { x - 1, x + 1, x, x };
-        int[] adjacentY = { y, y, y - 1, y + 1 };
-
-        for (int i = 0; i < 4; i++)
-        {
-            if (adjacentX[i] >= 0 && adjacentX[i] < gridWidth && adjacentY[i] >= 0 && adjacentY[i] < gridHeight)
-            {
-                Obstacle obstacle = grid[adjacentX[i], adjacentY[i]]?.GetComponent<Obstacle>();
-                if (obstacle != null && obstacle.isAffectedByBlast)
-                {
-                    obstacle.TakeDamage(1);
-                }
-            }
-        }
-    }
-
-    private void FindGroup(int x, int y, Cube.CubeType type)
-    {
-        if (x < 0 || x >= gridWidth || y < 0 || y >= gridHeight) return;
-
-        GameObject gridObject = grid[x, y];
-        if (gridObject == null) return;
-
-        Cube cubeComponent = gridObject.GetComponent<Cube>();
-        if (cubeComponent == null) return;
-
-        if (visited[x, y] || cubeComponent.cubeType != type) return;
-
-        visited[x, y] = true;
-        foundGroup.Add(cubeComponent);
-
-        FindGroup(x + 1, y, type);
-        FindGroup(x - 1, y, type);
-        FindGroup(x, y + 1, type);
-        FindGroup(x, y - 1, type);
-    }
-
-
-    private IEnumerator FallDown(GameObject cube, Vector3 target, float duration)
-    {
-        float elapsedTime = 0;
-        Vector3 startingPosition = cube.transform.position;
-        while (elapsedTime < duration)
-        {
-            cube.transform.position = Vector3.Lerp(startingPosition, target, elapsedTime / duration);
-            elapsedTime += Time.deltaTime;
-            yield return null;
-        }
-        cube.transform.position = target; // Ensure the target position is set accurately after the loop
-
-        CheckAndUpdateSprites();
-    }
-
-    // A coroutine to handle each column individually
-    private IEnumerator HandleColumnFalling(int x)
-    {
-        List<Coroutine> coroutines = new List<Coroutine>();
-
-        for (int y = 0; y < gridHeight; y++)
-        {
-            if (grid[x, y] == null)
-            {
-                // Wait for the specified delay time
-                yield return new WaitForSeconds(fallDelay);
-
-                // Find the next non-null cube in this column
-                for (int nextY = y + 1; nextY < gridHeight; nextY++)
-                {
-                    if (grid[x, nextY] != null)
-                    {
-                        // Calculate target position
-                        Vector3 targetPosition = new Vector3(gridOrigin.x + x * spriteSize, gridOrigin.y + y * spriteSize, 0);
-
-                        // Calculate the distance to the target position
-                        float distance = Vector3.Distance(grid[x, nextY].transform.position, targetPosition);
-
-                        // Calculate the fall duration based on the distance and speed
-                        float fallDuration = distance / fallSpeed;
-
-                        // Start the coroutine to make the cube fall down and add it to the list
-                        coroutines.Add(StartCoroutine(FallDown(grid[x, nextY], targetPosition, fallDuration)));
-
-                        // Update the grid array
-                        grid[x, y] = grid[x, nextY];
-                        grid[x, nextY] = null;
-
-                        break;
+                        Vector2Int newFallPoint = new Vector2Int(x, y - emptyCount);
+                        fallPoints.Add((grid[x, y], newFallPoint));
                     }
                 }
             }
         }
-
-        // Wait for all coroutines to complete
-        foreach (var coroutine in coroutines)
-        {
-            yield return coroutine;
-        }
+        return fallPoints;
     }
 
 
-    // The main function to handle all cubes falling
-    private IEnumerator HandleFallingCubes()
+    private IEnumerator FallAndFill()
     {
         isFalling = true;
-        List<Coroutine> coroutines = new List<Coroutine>();
+        List<(GameObject, Vector2Int)> fallPoints = CalculateFallPoints();
 
-        for (int x = 0; x < gridWidth; x++)
+        foreach (var (obj, newCoords) in fallPoints)
         {
-            coroutines.Add(StartCoroutine(HandleColumnFalling(x)));
+            Cube cubeComponent = obj?.GetComponent<Cube>();
+            Obstacle obstacleComponent = obj?.GetComponent<Obstacle>();
+            TNT tntComponent = obj?.GetComponent<TNT>();
+
+            if (cubeComponent != null)
+            {
+                // Get the old coordinates from the grid array.
+                Vector2Int oldCoords = new Vector2Int(cubeComponent.getCoords().x, cubeComponent.getCoords().y);
+                cubeComponent.FallTo(newCoords, fallDuration, spriteSize, gridOrigin);
+
+                // Update the grid array.
+                UpdateCell(oldCoords.x, oldCoords.y, null);
+                UpdateCell(newCoords.x, newCoords.y, obj);
+            }
+            else if (obstacleComponent != null)
+            {
+                // Get the old coordinates from the grid array.
+                Vector2Int oldCoords = new Vector2Int(obstacleComponent.getCoords().x, obstacleComponent.getCoords().y);
+                obstacleComponent.FallTo(newCoords, fallDuration, spriteSize, gridOrigin);
+
+                // Update the grid array.
+                UpdateCell(oldCoords.x, oldCoords.y, null);
+                UpdateCell(newCoords.x, newCoords.y, obj);
+            }
+            else if (tntComponent != null)
+            {
+                // Get the old coordinates from the grid array.
+                Vector2Int oldCoords = new Vector2Int(tntComponent.getCoords().x, tntComponent.getCoords().y);
+                tntComponent.FallTo(newCoords, fallDuration, spriteSize, gridOrigin);
+
+                // Update the grid array.
+                UpdateCell(oldCoords.x, oldCoords.y, null);
+                UpdateCell(newCoords.x, newCoords.y, obj);
+            }
         }
 
-        // Wait for all coroutines to complete
-        foreach (var coroutine in coroutines)
-        {
-            yield return coroutine;
-        }
-
-        // Start the coroutine to spawn new cubes
-        yield return StartCoroutine(SpawnNewCubes());
-
+        yield return new WaitForSeconds(fallDuration);
         isFalling = false;
-        CheckAndUpdateSprites();
+        CubeGroupFinder.ScanAndUpdateGrid(grid);
     }
-
-    private IEnumerator SpawnNewCubes()
-    {
-        List<Coroutine> spawnCoroutines = new List<Coroutine>();
-
-        for (int x = 0; x < gridWidth; x++)
-        {
-            spawnCoroutines.Add(StartCoroutine(SpawnNewCubesInColumn(x)));
-        }
-
-        foreach (var coroutine in spawnCoroutines)
-        {
-            yield return coroutine;
-        }
-
-        CheckAndUpdateSprites();
-    }
-
-    private IEnumerator SpawnNewCubesInColumn(int x)
-    {
-        int emptyCount = 0;
-        for (int y = 0; y < gridHeight; y++)
-        {
-            if (grid[x, y] == null)
-            {
-                emptyCount++;
-                string itemCode = "rand";
-                GameObject prefabToInstantiate = GetPrefabBasedOnItemCode(itemCode);
-
-                float initialY = gridOrigin.y + gridHeight * spriteSize + (emptyCount - 1) * spriteSize;
-                GameObject newCell = Instantiate(prefabToInstantiate, new Vector3(gridOrigin.x + x * spriteSize, 1.25f, 0), Quaternion.identity);
-
-                newCell.transform.localScale = new Vector3(spriteSize, spriteSize, 1);
-                newCell.transform.SetParent(gridParent.transform);
-
-                Cube cubeComponent = newCell.GetComponent<Cube>();
-                if (cubeComponent != null)
-                {
-                    cubeComponent.cubeType = Cube.CubeType.Random;
-                    cubeComponent.UpdateSprite();
-                }
-
-                Vector3 targetPosition = new Vector3(gridOrigin.x + x * spriteSize, gridOrigin.y + y * spriteSize, 0);
-                float distance = Vector3.Distance(newCell.transform.position, targetPosition);
-                float fallDuration = distance / fallSpeed;
-
-                yield return StartCoroutine(FallDown(newCell, targetPosition, fallDuration));
-
-                grid[x, y] = newCell;
-            }
-        }
-    }
-
-    private void CheckAndUpdateSprites()
-    {
-        // Iterate over the grid and check for groups
-        for (int y = 0; y < gridHeight; y++)
-        {
-            for (int x = 0; x < gridWidth; x++)
-            {
-                // Reset visited array for new checking
-                visited = new bool[gridWidth, gridHeight];
-                foundGroup = new List<Cube>();
-
-                if (grid[x, y] == null) return;
-
-                // Start the DFS from each cube to find groups
-                Cube currentCube = grid[x, y]?.GetComponent<Cube>();
-                if (currentCube != null)
-                {
-                    FindGroup(x, y, currentCube.cubeType);
-
-                    // Check the found group and update sprites
-                    if (foundGroup.Count >= 5)
-                    {
-                        foreach (var cube in foundGroup)
-                        {
-                            cube.ActivateTNTSprite();
-                        }
-                    }
-                    else
-                    {
-                        foreach (var cube in foundGroup)
-                        {
-                            cube.DeactivateTNTSprite();
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // TODO: Additional methods like destroying obstacles, spawning TNT etc.
 }

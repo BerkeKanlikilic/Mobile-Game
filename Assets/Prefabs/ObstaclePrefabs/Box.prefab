@@ -72,8 +72,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: -711422093
-  m_SortingLayer: 1
+  m_SortingLayerID: 297602787
+  m_SortingLayer: 2
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: ba1a89d0b114cfb45a2b0b69d0971d73, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -104,6 +104,7 @@ MonoBehaviour:
   isAffectedByTNT: 1
   doesFallDown: 0
   sprites: []
+  gridManager: {fileID: 0}
 --- !u!114 &510286935721153409
 MonoBehaviour:
   m_ObjectHideFlags: 0

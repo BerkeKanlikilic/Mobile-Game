@@ -4,15 +4,14 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
+    [Header("References")]
+    [SerializeField] private LevelLoader levelLoader;
+    
+    [Header("Debug")]
+    [SerializeField] private int levelToLoad = 1;
+
+    private void Start() {
+        levelLoader.LoadLevel(levelToLoad);
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }

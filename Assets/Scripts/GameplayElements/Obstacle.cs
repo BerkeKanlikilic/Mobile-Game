@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class Obstacle : MonoBehaviour
@@ -11,23 +12,28 @@ public class Obstacle : MonoBehaviour
         // Add future types here
     }
 
-    public ObstacleType type; // For debugging or future reference
+    public ObstacleType obstacleType; // For debugging or future reference
     public int health; // Health of the obstacle
     public bool isAffectedByBlast; // Does it get damaged by regular blasts?
     public bool isAffectedByTNT; // Does it get damaged by TNT?
     public bool doesFallDown; // Does it fall down when there's an empty space below?
 
-    public Sprite[] sprites; // Array to hold different sprites based on health
+    public Sprite crackedVaseSprite; // Array to hold different sprite based on health
     private SpriteRenderer spriteRenderer; // Sprite renderer component
 
-    public GridManager gridManager;
+    [field: SerializeField] public Vector2Int coords { get; private set; }
+
+    private void Awake()
+    {
+        spriteRenderer = GetComponent<SpriteRenderer>();
+    }
 
     private void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
 
         // Setting properties based on type
-        switch (type)
+        switch (obstacleType)
         {
             case ObstacleType.Box:
                 isAffectedByBlast = true;
@@ -47,17 +53,27 @@ public class Obstacle : MonoBehaviour
                 doesFallDown = true;
                 health = 2;
                 break;
-            // Add future types here with their properties
+                // Add future types here with their properties
         }
+    }
+
+    public void setCoords(int x, int y)
+    {
+        coords = new Vector2Int(x, y);
+    }
+
+    public Vector2Int getCoords()
+    {
+        return coords;
     }
 
     // Method to handle damage taken by the obstacle
     public void TakeDamage(int damage, bool damageByTNT = false)
     {
-        Debug.Log($"Damage: {damage} Remaining HP: {health}");
+        //Debug.Log($"Damage: {damage} Remaining HP: {health}");
 
         // Additional condition for Vase to ensure it doesn't take more than 1 damage from a single blast
-        if (type == ObstacleType.Vase && damage > 1 && !damageByTNT)
+        if (obstacleType == ObstacleType.Vase && damage > 1 && !damageByTNT)
         {
             damage = 1;
         }
@@ -70,11 +86,12 @@ public class Obstacle : MonoBehaviour
         // If health reaches zero, the obstacle is destroyed
         if (health <= 0)
         {
+            GridManager.instance.UpdateCell(coords.x, coords.y, null);
             Destroy(gameObject);
         }
 
         // Update sprite if this is a vase
-        if (type == ObstacleType.Vase)
+        if (obstacleType == ObstacleType.Vase && health == 1)
         {
             UpdateSprite();
         }
@@ -82,21 +99,27 @@ public class Obstacle : MonoBehaviour
 
     private void UpdateSprite()
     {
-        if (health > 0 && health <= sprites.Length)
-        {
-            spriteRenderer.sprite = sprites[health - 1];
-        }
+        spriteRenderer.sprite = crackedVaseSprite;
     }
 
-    public void HandleFall()
+    public void FallTo(Vector2Int newCoords, float duration, float spriteSize, Vector2 gridOrigin)
     {
-        // Implement the logic for the obstacle to fall down to the empty cell below.
-        // Only for obstacles that fall, i.e., Vase.
-        if (doesFallDown)
-        {
-            // Add falling logic here.
-        }
+        coords = newCoords;
+        StartCoroutine(FallCoroutine(newCoords, duration, spriteSize, gridOrigin));
     }
 
-    // Other methods and logic for the Obstacle can go here
+    private IEnumerator FallCoroutine(Vector2Int newCoords, float duration, float spriteSize, Vector2 gridOrigin)
+    {
+        Vector3 targetPosition = new Vector3(gridOrigin.x + newCoords.x * spriteSize, gridOrigin.y + newCoords.y * spriteSize, 0);
+        float elapsedTime = 0;
+        Vector3 startingPosition = transform.position;
+
+        while (elapsedTime < duration)
+        {
+            transform.position = Vector3.Lerp(startingPosition, targetPosition, elapsedTime / duration);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        transform.position = targetPosition;
+    }
 }

@@ -72,8 +72,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: -711422093
-  m_SortingLayer: 1
+  m_SortingLayerID: 297602787
+  m_SortingLayer: 2
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 46a44cb36afb5654697b983cc500c100, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -98,14 +98,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: adb05cd443e8ee14796cafeddc63d7f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  type: 2
+  obstacleType: 0
   health: 2
   isAffectedByBlast: 1
   isAffectedByTNT: 1
   doesFallDown: 1
-  sprites:
-  - {fileID: 21300000, guid: 46a44cb36afb5654697b983cc500c100, type: 3}
-  - {fileID: 21300000, guid: d114421361607e04aae047214d8b2046, type: 3}
+  crackedVaseSprite: {fileID: 21300000, guid: d114421361607e04aae047214d8b2046, type: 3}
+  <coords>k__BackingField: {x: 0, y: 0}
 --- !u!114 &3673336292923248601
 MonoBehaviour:
   m_ObjectHideFlags: 0

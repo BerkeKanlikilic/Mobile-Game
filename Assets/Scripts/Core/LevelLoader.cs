@@ -12,21 +12,28 @@ public class LevelData
 
 public class LevelLoader : MonoBehaviour
 {
-    public TextAsset[] levelTextAssets; // Drag your JSON TextAssets here in the Unity Editor
+    public TextAsset[] levelTextAssets;
 
-    public LevelData LoadLevel(int levelNumber)
+    public void LoadLevel(int levelNumber)
     {
         if (levelNumber < 1 || levelNumber > levelTextAssets.Length)
         {
             Debug.LogError("Invalid level number.");
-            return null;
+            return;
         }
+        Debug.Log($"Level {levelNumber} is Loading...");
 
         TextAsset jsonText = levelTextAssets[levelNumber - 1];
 
         // Deserialize the JSON to a LevelData object
         LevelData levelData = JsonUtility.FromJson<LevelData>(jsonText.text);
 
-        return levelData;
+        if(levelData != null) {
+            Debug.Log("Complete!");
+            GridManager.instance.InitializeGrid(levelData);
+        }
+        else {
+            Debug.LogError("Level Data could not be loaded!");
+        }
     }
 }
