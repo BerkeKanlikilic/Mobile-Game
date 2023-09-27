@@ -29,7 +29,7 @@ public class CubeGroupFinder
 
         foreach (Cube cube in group)
         {
-            Vector2Int crd = cube.getCoords();
+            Vector2Int crd = cube.GetCoords();
             int x = crd.x;
             int y = crd.y;
 

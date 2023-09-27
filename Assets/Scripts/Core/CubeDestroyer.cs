@@ -6,7 +6,7 @@ public class CubeDestroyer
 {
     public static void DestroyGroup(List<Cube> group){
         foreach(Cube cube in group){
-            GridManager.instance.UpdateCell(cube.getCoords().x, cube.getCoords().y, null);
+            GridManager.instance.UpdateCell(cube.GetCoords().x, cube.GetCoords().y, null);
             Object.Destroy(cube.gameObject);
 
             // TODO: Animations.

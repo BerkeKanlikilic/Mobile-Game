@@ -379,7 +379,7 @@ GameObject:
   m_Component:
   - component: {fileID: 932765140}
   m_Layer: 0
-  m_Name: == Graphics ==
+  m_Name: == UI ==
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -643,9 +643,9 @@ MonoBehaviour:
   spriteSize: 0.5
   originOffset: {x: 0, y: -1.5}
   margin: {x: 0.2, y: 0.3}
-  fallDelay: 0.08
+  fallDelayRow: 0.5
+  postFallDelay: 0.05
   fallSpeed: 7.5
-  fallDuration: 0.5
 --- !u!4 &1520647456
 Transform:
   m_ObjectHideFlags: 0

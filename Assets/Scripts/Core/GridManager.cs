@@ -21,21 +21,21 @@ public class GridManager : MonoBehaviour
     [SerializeField] private Vector2 margin;
 
     [Header("Cube Settings")]
-    [SerializeField] private float fallDelay = 0.0f;
+    [SerializeField] private float fallDelayRow;
+    [SerializeField] private float postFallDelay;
     [SerializeField] private float fallSpeed = 1f;
-    [SerializeField] private float fallDuration = 0.5f;
-
-    // Debug
-    private List<Vector3> debugFallPoints = new List<Vector3>();
 
     private int gridWidth;
     private int gridHeight;
     private Vector2 gridOrigin;
     private GameObject[,] grid;
-
     private bool[,] visited;
     private List<Cube> foundGroup;
-    private bool isFalling = false;
+
+
+    public bool isAnyCubeMoving { get; private set; } = false;
+    private int movingCubeCount = 0;
+
 
     public static GridManager instance;
 
@@ -71,7 +71,19 @@ public class GridManager : MonoBehaviour
             for (int x = 0; x < gridWidth; x++)
             {
                 string itemCode = levelData.grid[index];
-                GameObject prefabToInstantiate = GetPrefabBasedOnItemCode(itemCode);
+                
+                InitializeCell(x, y, itemCode);
+
+                index++;
+            }
+        }
+
+        CubeGroupFinder.ScanAndUpdateGrid(grid);
+    }
+
+    private void InitializeCell(int x, int y, string itemCode)
+    {
+        GameObject prefabToInstantiate = GetPrefabBasedOnItemCode(itemCode);
 
                 if (prefabToInstantiate != null)
                 {
@@ -104,8 +116,9 @@ public class GridManager : MonoBehaviour
                                 break;
                         }
                         cubeComponent.UpdateSprite();
-                        cubeComponent.setCoords(x, y);
-                    } else if (obstacleComponent != null)
+                        cubeComponent.SetCoords(x, y);
+                    }
+                    else if (obstacleComponent != null)
                     {
                         // logic to update the Obstacle's type and sprite based on itemCode
                         switch (itemCode)
@@ -120,27 +133,14 @@ public class GridManager : MonoBehaviour
                                 obstacleComponent.obstacleType = Obstacle.ObstacleType.Vase;
                                 break;
                         }
-                        obstacleComponent.setCoords(x, y);
-                    } else if (tntComponent != null){
-                        tntComponent.setCoords(x,y);
+                        obstacleComponent.SetCoords(x, y);
+                    }
+                    else if (tntComponent != null)
+                    {
+                        tntComponent.SetCoords(x, y);
                     }
                     grid[x, y] = newCell;
                 }
-
-                index++;
-            }
-        }
-
-        CubeGroupFinder.ScanAndUpdateGrid(grid);
-
-        // Debugging output
-        // for (int y = 0; y < gridHeight; y++)
-        // {
-        //    for (int x = 0; x < gridWidth; x++)
-        //    {
-        //        Debug.Log($"Grid[{x},{y}] = {grid[x, y]?.name ?? "Empty"}");
-        //    }
-        // }
     }
 
     private GameObject GetPrefabBasedOnItemCode(string itemCode)
@@ -162,7 +162,6 @@ public class GridManager : MonoBehaviour
             case "t":
                 return tntPrefab;
             default:
-                Debug.LogError("Unknown item code: " + itemCode);
                 return null;
         }
     }
@@ -173,16 +172,14 @@ public class GridManager : MonoBehaviour
         grid[x, y] = newCell;
     }
 
-    public void HandleTap(GameObject cell)
+    public void HandleCellTap(GameObject cell)
     {
-        if(isFalling) return;
-
         Cube cube = cell?.GetComponent<Cube>();
         TNT tnt = cell?.GetComponent<TNT>();
 
         if (cube != null)
         {
-            Vector2Int coords = cube.getCoords();
+            Vector2Int coords = cube.GetCoords();
 
             List<Cube> group = CubeGroupFinder.FindGroup(coords.x, coords.y, cube.cubeType, grid);
             List<Obstacle> obstacles = CubeGroupFinder.FindAdjacentObstacles(group, grid);
@@ -200,7 +197,7 @@ public class GridManager : MonoBehaviour
                     newTNT.transform.SetParent(gridParent.transform);
                     // Update the grid array
                     grid[coords.x, coords.y] = newTNT;
-                    newTNT.GetComponent<TNT>().setCoords(coords.x, coords.y);
+                    newTNT.GetComponent<TNT>().SetCoords(coords.x, coords.y);
                 }
             }
         }
@@ -213,6 +210,31 @@ public class GridManager : MonoBehaviour
 
         // Handle the falling and filling of cubes
         StartCoroutine(FallAndFill());
+    }
+
+    private IEnumerator FallAndFill()
+    {
+        List<(GameObject, Vector2Int)> fallPoints = CalculateFallPoints();
+
+        foreach (var (obj, newCoords) in fallPoints)
+        {
+            IFallable fallableComponent = obj?.GetComponent<IFallable>();
+
+            if (fallableComponent != null)
+            {
+                float delay = fallableComponent.GetCoords().y * fallDelayRow;
+
+                // Get the old coordinates from the grid array.
+                Vector2Int oldCoords = new Vector2Int(fallableComponent.GetCoords().x, fallableComponent.GetCoords().y);
+                fallableComponent.FallTo(newCoords, fallSpeed, spriteSize, gridOrigin, delay);
+
+                // Update the grid array.
+                UpdateCell(oldCoords.x, oldCoords.y, null);
+                UpdateCell(newCoords.x, newCoords.y, obj);
+            }
+        }
+
+        yield return new WaitForSeconds(postFallDelay);
     }
 
     private List<(GameObject, Vector2Int)> CalculateFallPoints()
@@ -248,52 +270,23 @@ public class GridManager : MonoBehaviour
         return fallPoints;
     }
 
-
-    private IEnumerator FallAndFill()
+    public void IncrementMovingCubeCount()
     {
-        isFalling = true;
-        List<(GameObject, Vector2Int)> fallPoints = CalculateFallPoints();
+        movingCubeCount++;
+        UpdateIsAnyCubeMoving();
+    }
 
-        foreach (var (obj, newCoords) in fallPoints)
-        {
-            Cube cubeComponent = obj?.GetComponent<Cube>();
-            Obstacle obstacleComponent = obj?.GetComponent<Obstacle>();
-            TNT tntComponent = obj?.GetComponent<TNT>();
+    public void DecrementMovingCubeCount()
+    {
+        movingCubeCount--;
+        UpdateIsAnyCubeMoving();
+    }
 
-            if (cubeComponent != null)
-            {
-                // Get the old coordinates from the grid array.
-                Vector2Int oldCoords = new Vector2Int(cubeComponent.getCoords().x, cubeComponent.getCoords().y);
-                cubeComponent.FallTo(newCoords, fallDuration, spriteSize, gridOrigin);
+    private void UpdateIsAnyCubeMoving()
+    {
+        isAnyCubeMoving = movingCubeCount > 0;
+        if (!isAnyCubeMoving) CubeGroupFinder.ScanAndUpdateGrid(grid);
 
-                // Update the grid array.
-                UpdateCell(oldCoords.x, oldCoords.y, null);
-                UpdateCell(newCoords.x, newCoords.y, obj);
-            }
-            else if (obstacleComponent != null)
-            {
-                // Get the old coordinates from the grid array.
-                Vector2Int oldCoords = new Vector2Int(obstacleComponent.getCoords().x, obstacleComponent.getCoords().y);
-                obstacleComponent.FallTo(newCoords, fallDuration, spriteSize, gridOrigin);
-
-                // Update the grid array.
-                UpdateCell(oldCoords.x, oldCoords.y, null);
-                UpdateCell(newCoords.x, newCoords.y, obj);
-            }
-            else if (tntComponent != null)
-            {
-                // Get the old coordinates from the grid array.
-                Vector2Int oldCoords = new Vector2Int(tntComponent.getCoords().x, tntComponent.getCoords().y);
-                tntComponent.FallTo(newCoords, fallDuration, spriteSize, gridOrigin);
-
-                // Update the grid array.
-                UpdateCell(oldCoords.x, oldCoords.y, null);
-                UpdateCell(newCoords.x, newCoords.y, obj);
-            }
-        }
-
-        yield return new WaitForSeconds(fallDuration);
-        isFalling = false;
-        CubeGroupFinder.ScanAndUpdateGrid(grid);
+        // Debug.Log($"MovingCubeCount: {movingCubeCount} | isAnyCubeMoving: {isAnyCubeMoving}");
     }
 }

@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class Cube : MonoBehaviour
+public class Cube : MonoBehaviour, IFallable
 {
     public enum CubeType
     {
@@ -27,12 +27,12 @@ public class Cube : MonoBehaviour
         UpdateSprite();
     }
 
-    public void setCoords(int x, int y)
+    public void SetCoords(int x, int y)
     {
         coords = new Vector2Int(x, y);
     }
 
-    public Vector2Int getCoords()
+    public Vector2Int GetCoords()
     {
         return coords;
     }
@@ -62,18 +62,27 @@ public class Cube : MonoBehaviour
 
     private void OnMouseDown()
     {
+        // Do not handle tap if any cube is moving
+        if (GridManager.instance.isAnyCubeMoving) return;
+
         // Notify GridManager that this cube was tapped
-        GridManager.instance.HandleTap(gameObject);
+        GridManager.instance.HandleCellTap(gameObject);
     }
 
-    public void FallTo(Vector2Int newCoords, float duration, float spriteSize, Vector2 gridOrigin)
+    public void FallTo(Vector2Int newCoords, float speed, float spriteSize, Vector2 gridOrigin, float delay)
     {
         coords = newCoords;
-        StartCoroutine(FallCoroutine(newCoords, duration, spriteSize, gridOrigin));
+        float distance = Vector3.Distance(transform.position, new Vector3(gridOrigin.x + newCoords.x * spriteSize, gridOrigin.y + newCoords.y * spriteSize, 0));
+        float duration = distance / speed;
+        StartCoroutine(FallCoroutine(newCoords, duration, spriteSize, gridOrigin, delay));
     }
 
-    private IEnumerator FallCoroutine(Vector2Int newCoords, float duration, float spriteSize, Vector2 gridOrigin)
+    private IEnumerator FallCoroutine(Vector2Int newCoords, float duration, float spriteSize, Vector2 gridOrigin, float delay)
     {
+        GridManager.instance.IncrementMovingCubeCount();
+
+        yield return new WaitForSeconds(delay);
+
         Vector3 targetPosition = new Vector3(gridOrigin.x + newCoords.x * spriteSize, gridOrigin.y + newCoords.y * spriteSize, 0);
         float elapsedTime = 0;
         Vector3 startingPosition = transform.position;
@@ -85,5 +94,7 @@ public class Cube : MonoBehaviour
             yield return null;
         }
         transform.position = targetPosition;
+
+        GridManager.instance.DecrementMovingCubeCount();
     }
 }

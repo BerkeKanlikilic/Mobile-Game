@@ -50,6 +50,7 @@
      <Compile Include="Assets\Scripts\AreaAndTasks\Task.cs" />
      <Compile Include="Assets\Scripts\UI\PopupManager.cs" />
      <Compile Include="Assets\Scripts\GameplayElements\TNT.cs" />
+     <Compile Include="Assets\Scripts\Interface\IFallable.cs" />
      <Compile Include="Assets\Scripts\GameplayElements\Obstacle.cs" />
      <Compile Include="Assets\Scripts\UI\UIManager.cs" />
      <Compile Include="Assets\Scripts\Core\LevelLoader.cs" />
