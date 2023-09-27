@@ -69,21 +69,22 @@ public class Cube : MonoBehaviour, IFallable
         GridManager.instance.HandleCellTap(gameObject);
     }
 
-    public void FallTo(Vector2Int newCoords, float speed, float spriteSize, Vector2 gridOrigin, float delay)
+    public void FallTo(Vector2Int newCoords, float speed, float spriteSize, Vector2 gridOrigin, float delay, float originalHeight, float gap)
     {
         coords = newCoords;
         float distance = Vector3.Distance(transform.position, new Vector3(gridOrigin.x + newCoords.x * spriteSize, gridOrigin.y + newCoords.y * spriteSize, 0));
         float duration = distance / speed;
-        StartCoroutine(FallCoroutine(newCoords, duration, spriteSize, gridOrigin, delay));
+        StartCoroutine(FallCoroutine(newCoords, duration, spriteSize, gridOrigin, delay, originalHeight, gap));
     }
 
-    private IEnumerator FallCoroutine(Vector2Int newCoords, float duration, float spriteSize, Vector2 gridOrigin, float delay)
+    private IEnumerator FallCoroutine(Vector2Int newCoords, float duration, float spriteSize, Vector2 gridOrigin, float delay, float originalHeight, float gap)
     {
         GridManager.instance.IncrementMovingCubeCount();
 
         yield return new WaitForSeconds(delay);
 
-        Vector3 targetPosition = new Vector3(gridOrigin.x + newCoords.x * spriteSize, gridOrigin.y + newCoords.y * spriteSize, 0);
+        float additionalYOffset = newCoords.y >= originalHeight ? gap : 0;
+        Vector3 targetPosition = new Vector3(gridOrigin.x + newCoords.x * spriteSize, gridOrigin.y + newCoords.y * spriteSize + additionalYOffset, 0);
         float elapsedTime = 0;
         Vector3 startingPosition = transform.position;
 

@@ -5,5 +5,5 @@ using UnityEngine;
 public interface IFallable
 {
     Vector2Int GetCoords();
-    void FallTo(Vector2Int newCoords, float fallSpeed, float spriteSize, Vector2 gridOrigin, float delay);
+    void FallTo(Vector2Int newCoords, float fallSpeed, float spriteSize, Vector2 gridOrigin, float delay, float originalHeight, float gap);
 }

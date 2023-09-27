@@ -84,7 +84,7 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
+  m_MaskInteraction: 1
   m_SpriteSortPoint: 0
 --- !u!114 &3435865558281458709
 MonoBehaviour:
@@ -98,13 +98,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: adb05cd443e8ee14796cafeddc63d7f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  type: 0
+  obstacleType: 0
   health: 1
   isAffectedByBlast: 1
   isAffectedByTNT: 1
   doesFallDown: 0
-  sprites: []
-  gridManager: {fileID: 0}
+  crackedVaseSprite: {fileID: 0}
+  <coords>k__BackingField: {x: 0, y: 0}
 --- !u!114 &510286935721153409
 MonoBehaviour:
   m_ObjectHideFlags: 0

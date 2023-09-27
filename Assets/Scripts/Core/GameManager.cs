@@ -6,12 +6,12 @@ public class GameManager : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private LevelLoader levelLoader;
+    public LevelManager levelManager { get; private set; }
     
     [Header("Debug")]
     [SerializeField] private int levelToLoad = 1;
 
     private void Start() {
-        levelLoader.LoadLevel(levelToLoad);
+        levelManager = levelLoader.LoadLevel(levelToLoad);
     }
-
 }

@@ -9,38 +9,54 @@ public class CubeGroupFinder
 
     private static bool[,] visited;
 
-    public static List<Cube> FindGroup(int x, int y, Cube.CubeType type, GameObject[,] grid)
+    public static List<GameObject> FindGroup(int x, int y, Cube.CubeType? type, GameObject[,] grid, int originalHeight, bool searchForTNT = false)
     {
         gridWidth = grid.GetLength(0);
-        gridHeight = grid.GetLength(1);
+        gridHeight = originalHeight;
         visited = new bool[gridWidth, gridHeight];
 
-        List<Cube> group = new List<Cube>();
-        DFS(x, y, type, group, grid);
+        List<GameObject> group = new List<GameObject>();
+        DFS(x, y, type, group, grid, originalHeight, searchForTNT);
         return group;
     }
 
-    public static List<Obstacle> FindAdjacentObstacles(List<Cube> group, GameObject[,] grid)
+    public static List<Obstacle> FindAdjacentObstacles(List<GameObject> group, GameObject[,] grid, int originalHeight)
     {
         gridWidth = grid.GetLength(0);
-        gridHeight = grid.GetLength(1);
+        gridHeight = originalHeight;
 
         HashSet<Obstacle> adjacentObstacles = new HashSet<Obstacle>();
 
-        foreach (Cube cube in group)
+        foreach (GameObject gameObject in group)
         {
-            Vector2Int crd = cube.GetCoords();
+            Cube cube = gameObject.GetComponent<Cube>();
+            TNT tnt = gameObject.GetComponent<TNT>();
+            Vector2Int crd;
+
+            if (cube != null)
+            {
+                crd = cube.GetCoords();
+            }
+            else if (tnt != null)
+            {
+                crd = tnt.GetCoords();
+            }
+            else
+            {
+                continue;
+            }
+
             int x = crd.x;
             int y = crd.y;
 
             // Check each neighbor
             List<Vector2Int> neighbors = new List<Vector2Int>
-        {
-            new Vector2Int(x + 1, y),
-            new Vector2Int(x - 1, y),
-            new Vector2Int(x, y + 1),
-            new Vector2Int(x, y - 1)
-        };
+    {
+        new Vector2Int(x + 1, y),
+        new Vector2Int(x - 1, y),
+        new Vector2Int(x, y + 1),
+        new Vector2Int(x, y - 1)
+    };
 
             foreach (var neighbor in neighbors)
             {
@@ -64,7 +80,7 @@ public class CubeGroupFinder
         return adjacentObstacles.ToList();
     }
 
-    private static void DFS(int x, int y, Cube.CubeType type, List<Cube> group, GameObject[,] grid)
+    private static void DFS(int x, int y, Cube.CubeType? type, List<GameObject> group, GameObject[,] grid, int originalHeight, bool searchForTNT)
     {
         // Base cases: out of bounds or visited cell
         if (x < 0 || x >= gridWidth || y < 0 || y >= gridHeight || visited[x, y] || grid[x, y] == null)
@@ -72,28 +88,42 @@ public class CubeGroupFinder
             return;
         }
 
-        Cube cube = grid[x, y].GetComponent<Cube>();
+        GameObject gridObject = grid[x, y];
+        Cube cube = gridObject.GetComponent<Cube>();
+        TNT tnt = gridObject.GetComponent<TNT>();
 
-        if (cube == null || cube.cubeType != type)
+        // If searching for TNT, and a TNT is found
+        if (searchForTNT && tnt != null)
+        {
+            // Mark as visited
+            visited[x, y] = true;
+            // Add to group
+            group.Add(gridObject);
+        }
+        // If searching for a specific cube type, and a matching cube is found
+        else if (!searchForTNT && cube != null && cube.cubeType == type)
+        {
+            // Mark as visited
+            visited[x, y] = true;
+            // Add to group
+            group.Add(gridObject);
+        }
+        else
         {
             return;
         }
 
-        // Mark as visited
-        visited[x, y] = true;
-
-        // Add to group
-        group.Add(cube);
-
         // Recursively check all adjacent cells
-        DFS(x - 1, y, type, group, grid); // left
-        DFS(x + 1, y, type, group, grid); // right
-        DFS(x, y - 1, type, group, grid); // down
-        DFS(x, y + 1, type, group, grid); // up
+        DFS(x - 1, y, type, group, grid, originalHeight, searchForTNT); // left
+        DFS(x + 1, y, type, group, grid, originalHeight, searchForTNT); // right
+        DFS(x, y - 1, type, group, grid, originalHeight, searchForTNT); // down
+        DFS(x, y + 1, type, group, grid, originalHeight, searchForTNT); // up
     }
 
-    public static void ScanAndUpdateGrid(GameObject[,] grid)
+
+    public static void ScanAndUpdateGrid(GameObject[,] grid, int originalHeight)
     {
+        gridHeight = originalHeight;
         int rows = grid.GetLength(0);
         int cols = grid.GetLength(1);
 
@@ -106,21 +136,31 @@ public class CubeGroupFinder
                 Cube currentCube = grid[i, j].GetComponent<Cube>();
                 if (currentCube == null) continue;
 
-                // Find the group for the current cube
-                List<Cube> group = FindGroup(i, j, currentCube.cubeType, grid);
+                // Reset visited array
+                visited = new bool[gridWidth, gridHeight];
 
-                // Iterate through all the cubes in the group
-                foreach (Cube cube in group)
+                // Find the group for the current cube
+                List<GameObject> group = FindGroup(i, j, currentCube.cubeType, grid, originalHeight);
+
+                if (group.Count >= 5)
                 {
-                    if (group.Count >= 5)
+                    // If group size is 5 or more, activate the TNT sprite for all cubes in the group
+                    foreach (GameObject obj in group)
                     {
-                        // If group size is 5 or more, activate the TNT sprite
-                        cube.ActivateTNTSprite();
+                        Cube cube = obj?.GetComponent<Cube>();
+                        if (cube != null)
+                        {
+                            cube.ActivateTNTSprite();
+                        }
                     }
-                    else
+                }
+                else
+                {
+                    // If group size is less than 5, deactivate the TNT sprite for all cubes in the group
+                    foreach (GameObject obj in group)
                     {
-                        // If group size is less than 5 and the cube is currently a TNT, deactivate the TNT sprite
-                        if (cube.isTNTActive)
+                        Cube cube = obj?.GetComponent<Cube>();
+                        if (cube != null && cube.isTNTActive)
                         {
                             cube.DeactivateTNTSprite();
                         }

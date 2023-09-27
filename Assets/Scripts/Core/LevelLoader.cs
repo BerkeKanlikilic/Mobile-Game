@@ -14,12 +14,12 @@ public class LevelLoader : MonoBehaviour
 {
     public TextAsset[] levelTextAssets;
 
-    public void LoadLevel(int levelNumber)
+    public LevelManager LoadLevel(int levelNumber)
     {
         if (levelNumber < 1 || levelNumber > levelTextAssets.Length)
         {
             Debug.LogError("Invalid level number.");
-            return;
+            return null;
         }
         Debug.Log($"Level {levelNumber} is Loading...");
 
@@ -30,10 +30,13 @@ public class LevelLoader : MonoBehaviour
 
         if(levelData != null) {
             Debug.Log("Complete!");
-            GridManager.instance.InitializeGrid(levelData);
+            LevelManager levelManager = new LevelManager(levelData.move_count, GridManager.instance.grid, GridManager.instance.originalHeight);
+            GridManager.instance.InitializeGrid(levelData, levelManager);
+            return levelManager;
         }
         else {
             Debug.LogError("Level Data could not be loaded!");
+            return null;
         }
     }
 }
