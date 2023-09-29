@@ -6,6 +6,7 @@ public class GameManager : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private LevelLoader levelLoader;
+
     public LevelManager levelManager { get; private set; }
     
     [Header("Debug")]

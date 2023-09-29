@@ -11,12 +11,14 @@ public class CubeDestroyer
             Cube cube = obj?.GetComponent<Cube>();
             TNT tnt = obj?.GetComponent<TNT>();
 
-            if(cube != null) GridManager.instance.UpdateCell(cube.GetCoords().x, cube.GetCoords().y, null);
+            if (cube != null)
+            {
+                GridManager.instance.UpdateCell(cube.GetCoords().x, cube.GetCoords().y, null);
+                cube.SpawnParticle();
+            }
             else if (tnt != null) GridManager.instance.UpdateCell(tnt.GetCoords().x, tnt.GetCoords().y, null);
             else return;
             Object.Destroy(obj);
-
-            // TODO: Animations.
         }
     }
 
@@ -28,13 +30,18 @@ public class CubeDestroyer
         }
     }
 
-    public static void ExplodeTNT(Vector2Int tntPosition, GameObject[,] grid, int originalHeight, bool isCombo)
+    public static void ExplodeTNT(Vector2Int tntPosition, GameObject[,] grid, int originalHeight, bool isCombo, HashSet<Vector2Int> explodedTNTs = null)
     {
-        int range = isCombo ? 3 : 2; // 7x7 for combo, 5x5 for single
+        if (explodedTNTs == null) explodedTNTs = new HashSet<Vector2Int>();
+
+        // If the TNT at this position has already been exploded, exit the function to prevent infinite recursion.
+        if (explodedTNTs.Contains(tntPosition)) return;
+
+        explodedTNTs.Add(tntPosition);
+
+        int range = isCombo ? 3 : 2;
         int gridWidth = grid.GetLength(0);
         int gridHeight = originalHeight;
-
-        GameObject tappedTNT = grid[tntPosition.x, tntPosition.y];
 
         for (int i = -range; i <= range; i++)
         {
@@ -48,25 +55,36 @@ public class CubeDestroyer
                     GameObject gridObject = grid[x, y];
                     if (gridObject != null)
                     {
-                        Cube cubeComponent = gridObject.GetComponent<Cube>();
-                        Obstacle obstacleComponent = gridObject.GetComponent<Obstacle>();
+                        Cube cubeComponent = gridObject?.GetComponent<Cube>();
+                        Obstacle obstacleComponent = gridObject?.GetComponent<Obstacle>();
+                        TNT tntComponent = gridObject?.GetComponent<TNT>();
                         if (cubeComponent != null)
                         {
-                            // Destroy the cube
+                            cubeComponent.SpawnParticle();
                             Object.Destroy(gridObject);
                             grid[x, y] = null;
                         }
                         else if (obstacleComponent != null)
                         {
-                            // Deal damage to the obstacle
                             obstacleComponent.TakeDamage(1, true);
+                        }
+                        else if (tntComponent != null)
+                        {
+                            Vector2Int newTNTPosition = new Vector2Int(x, y);
+                            List<GameObject> tntGroup = CubeGroupFinder.FindGroup(newTNTPosition.x, newTNTPosition.y, null, grid, originalHeight, true);
+                            bool isComboTNT = tntGroup.Count > 1;
+                            foreach (GameObject tntObject in tntGroup)
+                            {
+                                ExplodeTNT(newTNTPosition, grid, originalHeight, isComboTNT, explodedTNTs);
+                            }
                         }
                     }
                 }
             }
         }
 
-        Object.Destroy(tappedTNT);
+        grid[tntPosition.x, tntPosition.y]?.GetComponent<TNT>().SpawnParticle();
+        Object.Destroy(grid[tntPosition.x, tntPosition.y]);
         GridManager.instance.UpdateCell(tntPosition.x, tntPosition.y, null);
     }
 }

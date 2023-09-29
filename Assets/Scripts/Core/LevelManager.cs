@@ -17,7 +17,7 @@ public class LevelManager
     public void OnMoveMade(GameObject[,] updatedGrid)
     {
         movesLeft--;
-        Debug.Log($"Remaining Moves: {movesLeft}");
+        //Debug.Log($"Remaining Moves: {movesLeft}");
         CheckGameStatus(updatedGrid);
     }
 
@@ -65,6 +65,7 @@ public class LevelManager
     private void HandleWinCondition()
     {
         Debug.Log("You Won!");
+        GridManager.instance.UpdateTapAllowance(false);
         // Implement further logic for handling win condition
     }
 
@@ -72,6 +73,7 @@ public class LevelManager
     private void HandleLoseCondition()
     {
         Debug.Log("You Lost!");
+        GridManager.instance.UpdateTapAllowance(false);
         // Implement further logic for handling lose condition
     }
 }

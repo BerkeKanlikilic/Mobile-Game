@@ -144,6 +144,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e73b2f5081b4e24f83ab86f60641b22, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  explodeParticle: {fileID: 1514768775867307704, guid: ffa08829a90563b4780d79c52445b29a, type: 3}
   <coords>k__BackingField: {x: 0, y: 0}
 --- !u!114 &5174172317601380461
 MonoBehaviour:

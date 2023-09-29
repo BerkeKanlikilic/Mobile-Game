@@ -120,7 +120,6 @@ public class CubeGroupFinder
         DFS(x, y + 1, type, group, grid, originalHeight, searchForTNT); // up
     }
 
-
     public static void ScanAndUpdateGrid(GameObject[,] grid, int originalHeight)
     {
         gridHeight = originalHeight;
@@ -168,5 +167,46 @@ public class CubeGroupFinder
                 }
             }
         }
+    }
+
+    public static List<int> CountObstacles(GameObject[,] grid, int originalHeight)
+    {
+        List<int> obstacleCount = new List<int>(){ 0,0,0 };
+
+        if (grid == null)
+        {
+            Debug.LogError("Grid is null.");
+            return obstacleCount;
+        }
+
+        for (int i = 0; i < grid.GetLength(0); i++)
+        {
+            for (int j = 0; j < originalHeight; j++)
+            {
+                GameObject cell = grid[i, j];
+
+                Obstacle obsComponent = cell?.GetComponent<Obstacle>();
+                if (cell != null && obsComponent != null)
+                {
+                    switch (obsComponent.obstacleType)
+                    {
+                        case Obstacle.ObstacleType.Box:
+                            obstacleCount[0] = obstacleCount[0] + 1;
+                            break;
+                        case Obstacle.ObstacleType.Stone:
+                            obstacleCount[1] = obstacleCount[1] + 1;
+                            break;
+                        case Obstacle.ObstacleType.Vase:
+                            obstacleCount[2] = obstacleCount[2] + 1;
+                            break;
+                        default:
+                            Debug.LogError("Invalid obstacle type.");
+                            break;
+                    }
+                }
+            }
+        }
+
+        return obstacleCount;
     }
 }

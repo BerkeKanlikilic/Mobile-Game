@@ -87,6 +87,7 @@ public class Obstacle : MonoBehaviour, IFallable
         if (health <= 0)
         {
             GridManager.instance.UpdateCell(coords.x, coords.y, null);
+            GridManager.instance.DecreaseObstacleCount(obstacleType);
             Destroy(gameObject);
         }
 

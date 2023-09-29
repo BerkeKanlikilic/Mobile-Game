@@ -109,6 +109,11 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 9d565f08df00eb346a7a845db22fcf22, type: 3}
   - {fileID: 21300000, guid: 8038302aa82531b48abcc870add970fa, type: 3}
   - {fileID: 21300000, guid: ce5c2f826cdc66344baf79a54c958a1f, type: 3}
+  particles:
+  - {fileID: 9018404671944680019, guid: f10d34938a2c6ce44a86785e5273b0ff, type: 3}
+  - {fileID: 4435765213344613257, guid: 7615467a42f40ad4aa88f9c200966813, type: 3}
+  - {fileID: 6204880672460294902, guid: 3d0b81fbbb9c61b438115ce5c191d3da, type: 3}
+  - {fileID: 1352749780015073721, guid: b659ee7616d14c74596a4d53b06d5b9e, type: 3}
   cubeType: 0
   isTNTActive: 0
   <coords>k__BackingField: {x: 0, y: 0}

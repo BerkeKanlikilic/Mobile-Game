@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class TNT : MonoBehaviour, IFallable
 {
+    [SerializeField] private GameObject explodeParticle;
     [field: SerializeField] public Vector2Int coords { get; private set; }
 
     public void SetCoords(int x, int y)
@@ -53,5 +54,11 @@ public class TNT : MonoBehaviour, IFallable
         transform.position = targetPosition;
 
         GridManager.instance.DecrementMovingCubeCount();
+    }
+
+    public void SpawnParticle()
+    {
+        GameObject particle = Instantiate(explodeParticle, new Vector3(gameObject.transform.position.x, gameObject.transform.position.y, 0), Quaternion.identity);
+        //Destroy(particle, 1);
     }
 }

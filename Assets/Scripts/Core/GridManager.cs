@@ -7,12 +7,16 @@ public class GridManager : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private LevelLoader levelLoader;
+    [SerializeField] private UIManager uIManager;
     [SerializeField] private GameObject cubePrefab;
     [SerializeField] private GameObject[] obstaclePrefabs;
     [SerializeField] private GameObject gridParent;
     [SerializeField] private GameObject tntPrefab;
     [SerializeField] private RectTransform gridBackground;
     [SerializeField] private GameObject gridMask;
+
+    [Header("Game Settings")]
+    [SerializeField] private bool canTap = true;
 
     [Header("Grid Settings")]
     [SerializeField] private float spriteSize = 1.0f;  // Default size to 1 unit
@@ -35,6 +39,7 @@ public class GridManager : MonoBehaviour
 
     private int gridWidth;
     private int gridHeight;
+    private List<int> obstacleCount;
     public int originalHeight { get; private set; }
     private Vector2 gridOrigin;
     public GameObject[,] grid { get; private set; }
@@ -61,8 +66,15 @@ public class GridManager : MonoBehaviour
         }
     }
 
+    private void InitilaizeUI(LevelData levelData)
+    {
+        uIManager.UpdateMoveCount(levelData.move_count);
+    }
+
     public void InitializeGrid(LevelData levelData, LevelManager levelManager)
     {
+        InitilaizeUI(levelData);
+
         this.levelManager = levelManager;
         gridWidth = levelData.grid_width;
         originalHeight = levelData.grid_height;
@@ -94,6 +106,8 @@ public class GridManager : MonoBehaviour
         }
 
         CubeGroupFinder.ScanAndUpdateGrid(grid, originalHeight);
+        obstacleCount = CubeGroupFinder.CountObstacles(grid, originalHeight);
+        uIManager.UpdateObstacleCount(obstacleCount, true);
     }
 
     private void InitializeCell(int x, int y, string itemCode, int originalHeight, float gap)
@@ -196,6 +210,8 @@ public class GridManager : MonoBehaviour
 
     public void HandleCellTap(GameObject cell)
     {
+        if (!canTap) return;
+
         Cube cube = cell?.GetComponent<Cube>();
         TNT tnt = cell?.GetComponent<TNT>();
 
@@ -240,10 +256,7 @@ public class GridManager : MonoBehaviour
         // Handle the falling and filling of cubes
         StartCoroutine(FallAndFill());
 
-        if (moveMade)
-        {
-            levelManager?.OnMoveMade(grid);
-        }
+        if (moveMade) uIManager.DecreaseMoveCount();
     }
 
     void CreateTNT(Vector2Int coords)
@@ -348,7 +361,37 @@ public class GridManager : MonoBehaviour
     private void UpdateIsAnyCubeMoving()
     {
         isAnyCubeMoving = movingCubeCount > 0;
-        if (!isAnyCubeMoving) CubeGroupFinder.ScanAndUpdateGrid(grid, originalHeight);
+        if (!isAnyCubeMoving)
+        {
+            CubeGroupFinder.ScanAndUpdateGrid(grid, originalHeight);
+            levelManager?.OnMoveMade(grid);
+        }
         // Debug.Log($"MovingCubeCount: {movingCubeCount} | isAnyCubeMoving: {isAnyCubeMoving}");
+    }
+
+    public void DecreaseObstacleCount(Obstacle.ObstacleType type)
+    {
+        switch (type)
+        {
+            case Obstacle.ObstacleType.Box:
+                obstacleCount[0]--;
+                break;
+            case Obstacle.ObstacleType.Stone:
+                obstacleCount[1]--;
+                break;
+            case Obstacle.ObstacleType.Vase:
+                obstacleCount[2]--;
+                break;
+            default:
+                Debug.LogError("Invalid obstacle type.");
+                break;
+        }
+
+        uIManager.UpdateObstacleCount(obstacleCount);
+    }
+
+    public void UpdateTapAllowance(bool tapAllowed)
+    {
+        canTap = tapAllowed;
     }
 }

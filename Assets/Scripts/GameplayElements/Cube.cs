@@ -14,6 +14,7 @@ public class Cube : MonoBehaviour, IFallable
 
     public Sprite[] cubeSprites; // 0: Red, 1: Green, 2: Blue, 3: Yellow
     public Sprite[] tntCubeSprites; // TNT versions of the sprites
+    public GameObject[] particles; // Explosion particles
     public CubeType cubeType;
     private SpriteRenderer spriteRenderer;
     // Variable to keep track if the TNT sprite is active
@@ -97,5 +98,11 @@ public class Cube : MonoBehaviour, IFallable
         transform.position = targetPosition;
 
         GridManager.instance.DecrementMovingCubeCount();
+    }
+
+    public void SpawnParticle()
+    {
+        GameObject particle = Instantiate(particles[(int)cubeType], new Vector3(gameObject.transform.position.x, gameObject.transform.position.y, 0), Quaternion.identity);
+        Destroy(particle, 3);
     }
 }
