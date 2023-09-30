@@ -13,10 +13,10 @@ public class CubeDestroyer
 
             if (cube != null)
             {
-                GridManager.instance.UpdateCell(cube.GetCoords().x, cube.GetCoords().y, null);
+                GridManager.Instance.UpdateCell(cube.GetCoords().x, cube.GetCoords().y, null);
                 cube.SpawnParticle();
             }
-            else if (tnt != null) GridManager.instance.UpdateCell(tnt.GetCoords().x, tnt.GetCoords().y, null);
+            else if (tnt != null) GridManager.Instance.UpdateCell(tnt.GetCoords().x, tnt.GetCoords().y, null);
             else return;
             Object.Destroy(obj);
         }
@@ -85,6 +85,6 @@ public class CubeDestroyer
 
         grid[tntPosition.x, tntPosition.y]?.GetComponent<TNT>().SpawnParticle();
         Object.Destroy(grid[tntPosition.x, tntPosition.y]);
-        GridManager.instance.UpdateCell(tntPosition.x, tntPosition.y, null);
+        GridManager.Instance.UpdateCell(tntPosition.x, tntPosition.y, null);
     }
 }

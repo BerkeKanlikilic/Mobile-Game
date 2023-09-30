@@ -21,20 +21,23 @@ public class LevelLoader : MonoBehaviour
             Debug.LogError("Invalid level number.");
             return null;
         }
+
         Debug.Log($"Level {levelNumber} is Loading...");
 
         TextAsset jsonText = levelTextAssets[levelNumber - 1];
 
-        // Deserialize the JSON to a LevelData object
         LevelData levelData = JsonUtility.FromJson<LevelData>(jsonText.text);
 
-        if(levelData != null) {
+        if (levelData != null)
+        {
             Debug.Log("Complete!");
-            LevelManager levelManager = new LevelManager(levelData.move_count, GridManager.instance.grid, GridManager.instance.originalHeight);
-            GridManager.instance.InitializeGrid(levelData, levelManager);
+            LevelManager levelManager = new LevelManager(levelData.move_count, GridManager.Instance.grid,
+                GridManager.Instance.originalHeight);
+            GridManager.Instance.InitializeGrid(levelData, levelManager);
             return levelManager;
         }
-        else {
+        else
+        {
             Debug.LogError("Level Data could not be loaded!");
             return null;
         }

@@ -20,10 +20,10 @@ public class TNT : MonoBehaviour, IFallable
     private void OnMouseDown()
     {
         // Do not handle tap if any cube is moving
-        if (GridManager.instance.isAnyCubeMoving) return;
+        if (GridManager.Instance.isAnyCubeMoving) return;
 
         // Notify GridManager that this TNT was tapped
-        GridManager.instance.HandleCellTap(gameObject);
+        GridManager.Instance.HandleCellTap(gameObject);
     }
 
     public void FallTo(Vector2Int newCoords, float speed, float spriteSize, Vector2 gridOrigin, float delay, float originalHeight, float gap)
@@ -36,7 +36,7 @@ public class TNT : MonoBehaviour, IFallable
 
     private IEnumerator FallCoroutine(Vector2Int newCoords, float duration, float spriteSize, Vector2 gridOrigin, float delay, float originalHeight, float gap)
     {
-        GridManager.instance.IncrementMovingCubeCount();
+        GridManager.Instance.IncrementMovingCubeCount();
 
         yield return new WaitForSeconds(delay);
 
@@ -53,7 +53,7 @@ public class TNT : MonoBehaviour, IFallable
         }
         transform.position = targetPosition;
 
-        GridManager.instance.DecrementMovingCubeCount();
+        GridManager.Instance.DecrementMovingCubeCount();
     }
 
     public void SpawnParticle()

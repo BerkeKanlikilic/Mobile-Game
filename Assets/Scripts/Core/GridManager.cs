@@ -4,10 +4,9 @@ using UnityEngine;
 
 public class GridManager : MonoBehaviour
 {
+    [Header("References")] [SerializeField]
+    private LevelLoader levelLoader;
 
-    [Header("References")]
-    [SerializeField] private LevelLoader levelLoader;
-    [SerializeField] private UIManager uIManager;
     [SerializeField] private GameObject cubePrefab;
     [SerializeField] private GameObject[] obstaclePrefabs;
     [SerializeField] private GameObject gridParent;
@@ -15,24 +14,27 @@ public class GridManager : MonoBehaviour
     [SerializeField] private RectTransform gridBackground;
     [SerializeField] private GameObject gridMask;
 
-    [Header("Game Settings")]
-    [SerializeField] private bool canTap = true;
+    [Header("Game Settings")] [SerializeField]
+    private bool canTap = true;
 
-    [Header("Grid Settings")]
-    [SerializeField] private float spriteSize = 1.0f;  // Default size to 1 unit
-    [SerializeField] private Vector2 originOffset = Vector2.zero; // Default offset is 0
+    [Header("Grid Settings")] [SerializeField]
+    private float spriteSize = 1.0f; // Default size 1
+
+    [SerializeField] private Vector2 originOffset = Vector2.zero; // Default offset 0
     [SerializeField] private float gapBetweenGrids;
 
-    [Header("Grid Background Settings")]
-    [SerializeField] private Vector2 margin;
+    [Header("Grid Background Settings")] [SerializeField]
+    private Vector2 margin;
+
     [SerializeField] private Vector2 scaleFactor;
     [SerializeField] private float yOffset;
 
-    [Header("Grid Mask Settings")]
-    [SerializeField] private float yMargin;
+    [Header("Grid Mask Settings")] [SerializeField]
+    private float yMargin;
 
-    [Header("Cube Settings")]
-    [SerializeField] private float fallSpeed;
+    [Header("Cube Settings")] [SerializeField]
+    private float fallSpeed;
+
     [SerializeField] private float fallDelayRow;
     [SerializeField] private float preFallDelay;
     [SerializeField] private float postFallDelay;
@@ -52,13 +54,15 @@ public class GridManager : MonoBehaviour
 
 
     private LevelManager levelManager;
-    public static GridManager instance;
+    public static GridManager _instance;
+
+    public static GridManager Instance => _instance;
 
     private void Awake()
     {
-        if (instance == null)
+        if (_instance == null)
         {
-            instance = this;
+            _instance = this;
         }
         else
         {
@@ -68,7 +72,7 @@ public class GridManager : MonoBehaviour
 
     private void InitilaizeUI(LevelData levelData)
     {
-        uIManager.UpdateMoveCount(levelData.move_count);
+        UIManager.Instance.UpdateMoveCount(levelData.move_count);
     }
 
     public void InitializeGrid(LevelData levelData, LevelManager levelManager)
@@ -79,9 +83,11 @@ public class GridManager : MonoBehaviour
         gridWidth = levelData.grid_width;
         originalHeight = levelData.grid_height;
         gridHeight = originalHeight * 2;
-        gridBackground.sizeDelta = new Vector2((gridWidth + margin.x) * scaleFactor.x, (originalHeight + margin.y) * scaleFactor.y);
+        gridBackground.sizeDelta = new Vector2((gridWidth + margin.x) * scaleFactor.x,
+            (originalHeight + margin.y) * scaleFactor.y);
         gridBackground.anchoredPosition = new Vector2(originOffset.x, (originOffset.y * scaleFactor.y) + yOffset);
-        gridMask.transform.localScale = new Vector2(gridWidth * 0.5f + margin.x * 0.25f, originalHeight * 0.5f + yMargin);
+        gridMask.transform.localScale =
+            new Vector2(gridWidth * 0.5f + margin.x * 0.25f, originalHeight * 0.5f + yMargin);
         gridMask.transform.position = new Vector3(originOffset.x, originOffset.y + (yOffset / scaleFactor.y), 0);
 
         grid = new GameObject[gridWidth, gridHeight];
@@ -89,15 +95,17 @@ public class GridManager : MonoBehaviour
         float totalGridWidth = gridWidth * spriteSize;
         float totalGridHeight = gridHeight * spriteSize;
 
-        // Calculate the origin so that the grid will be centered
-        gridOrigin = new Vector2((-totalGridWidth / 2 + spriteSize / 2) + originOffset.x, (-originalHeight * spriteSize / 2 + spriteSize / 2) + originOffset.y);
+        gridOrigin = new Vector2((-totalGridWidth / 2 + spriteSize / 2) + originOffset.x,
+            (-originalHeight * spriteSize / 2 + spriteSize / 2) + originOffset.y);
 
         int index = 0;
         for (int y = 0; y < gridHeight; y++)
         {
             for (int x = 0; x < gridWidth; x++)
             {
-                string itemCode = (y >= originalHeight || index >= levelData.grid.Length) ? "rand" : levelData.grid[index];
+                string itemCode = (y >= originalHeight || index >= levelData.grid.Length)
+                    ? "rand"
+                    : levelData.grid[index];
 
                 InitializeCell(x, y, itemCode, originalHeight, gapBetweenGrids);
 
@@ -107,7 +115,7 @@ public class GridManager : MonoBehaviour
 
         CubeGroupFinder.ScanAndUpdateGrid(grid, originalHeight);
         obstacleCount = CubeGroupFinder.CountObstacles(grid, originalHeight);
-        uIManager.UpdateObstacleCount(obstacleCount, true);
+        UIManager.Instance.UpdateObstacleCount(obstacleCount, true);
     }
 
     private void InitializeCell(int x, int y, string itemCode, int originalHeight, float gap)
@@ -132,7 +140,6 @@ public class GridManager : MonoBehaviour
             TNT tntComponent = newCell.GetComponent<TNT>();
             if (cubeComponent != null)
             {
-                // logic to update the Cube's type and sprite based on itemCode
                 switch (itemCode)
                 {
                     case "r":
@@ -151,12 +158,12 @@ public class GridManager : MonoBehaviour
                         cubeComponent.cubeType = Cube.CubeType.Random;
                         break;
                 }
+
                 cubeComponent.UpdateSprite();
                 cubeComponent.SetCoords(x, y);
             }
             else if (obstacleComponent != null)
             {
-                // logic to update the Obstacle's type and sprite based on itemCode
                 switch (itemCode)
                 {
                     case "bo":
@@ -169,12 +176,14 @@ public class GridManager : MonoBehaviour
                         obstacleComponent.obstacleType = Obstacle.ObstacleType.Vase;
                         break;
                 }
+
                 obstacleComponent.SetCoords(x, y);
             }
             else if (tntComponent != null)
             {
                 tntComponent.SetCoords(x, y);
             }
+
             grid[x, y] = newCell;
         }
     }
@@ -220,7 +229,8 @@ public class GridManager : MonoBehaviour
         if (cube != null && cube.GetCoords().y < originalHeight)
         {
             Vector2Int coords = cube.GetCoords();
-            List<GameObject> group = CubeGroupFinder.FindGroup(coords.x, coords.y, cube.cubeType, grid, originalHeight, false);
+            List<GameObject> group =
+                CubeGroupFinder.FindGroup(coords.x, coords.y, cube.cubeType, grid, originalHeight, false);
             List<Obstacle> obstacles = CubeGroupFinder.FindAdjacentObstacles(group, grid, originalHeight);
 
             if (group.Count > 1)
@@ -253,15 +263,21 @@ public class GridManager : MonoBehaviour
 
             moveMade = true;
         }
-        // Handle the falling and filling of cubes
+
         StartCoroutine(FallAndFill());
 
-        if (moveMade) uIManager.DecreaseMoveCount();
+        if (moveMade)
+        {
+            levelManager?.OnMoveMade(grid);
+            UIManager.Instance.DecreaseMoveCount();
+        };
     }
 
     void CreateTNT(Vector2Int coords)
     {
-        GameObject newTNT = Instantiate(tntPrefab, new Vector3(gridOrigin.x + coords.x * spriteSize, gridOrigin.y + coords.y * spriteSize, 0), Quaternion.identity);
+        GameObject newTNT = Instantiate(tntPrefab,
+            new Vector3(gridOrigin.x + coords.x * spriteSize, gridOrigin.y + coords.y * spriteSize, 0),
+            Quaternion.identity);
         newTNT.transform.localScale = new Vector3(spriteSize, spriteSize, 1);
         newTNT.transform.SetParent(gridParent.transform);
         grid[coords.x, coords.y] = newTNT;
@@ -282,11 +298,10 @@ public class GridManager : MonoBehaviour
             {
                 float delay = fallableComponent.GetCoords().y * fallDelayRow;
 
-                // Get the old coordinates from the grid array.
                 Vector2Int oldCoords = new Vector2Int(fallableComponent.GetCoords().x, fallableComponent.GetCoords().y);
-                fallableComponent.FallTo(newCoords, fallSpeed, spriteSize, gridOrigin, delay, originalHeight, gapBetweenGrids);
+                fallableComponent.FallTo(newCoords, fallSpeed, spriteSize, gridOrigin, delay, originalHeight,
+                    gapBetweenGrids);
 
-                // Update the grid array.
                 UpdateCell(oldCoords.x, oldCoords.y, null);
                 UpdateCell(newCoords.x, newCoords.y, obj);
             }
@@ -314,9 +329,9 @@ public class GridManager : MonoBehaviour
                 else
                 {
                     Obstacle obstacle = grid[x, y]?.GetComponent<Obstacle>();
-                    if (obstacle != null && (obstacle.obstacleType == Obstacle.ObstacleType.Box || obstacle.obstacleType == Obstacle.ObstacleType.Stone))
+                    if (obstacle != null && (obstacle.obstacleType == Obstacle.ObstacleType.Box ||
+                                             obstacle.obstacleType == Obstacle.ObstacleType.Stone))
                     {
-                        // Reset the empty count as we can't move cubes below this point.
                         emptyCount = 0;
                     }
                     else if (emptyCount > 0)
@@ -327,6 +342,7 @@ public class GridManager : MonoBehaviour
                 }
             }
         }
+
         return fallPoints;
     }
 
@@ -364,7 +380,6 @@ public class GridManager : MonoBehaviour
         if (!isAnyCubeMoving)
         {
             CubeGroupFinder.ScanAndUpdateGrid(grid, originalHeight);
-            levelManager?.OnMoveMade(grid);
         }
         // Debug.Log($"MovingCubeCount: {movingCubeCount} | isAnyCubeMoving: {isAnyCubeMoving}");
     }
@@ -387,7 +402,7 @@ public class GridManager : MonoBehaviour
                 break;
         }
 
-        uIManager.UpdateObstacleCount(obstacleCount);
+        UIManager.Instance.UpdateObstacleCount(obstacleCount);
     }
 
     public void UpdateTapAllowance(bool tapAllowed)

@@ -104,6 +104,7 @@ MonoBehaviour:
   isAffectedByTNT: 1
   doesFallDown: 1
   crackedVaseSprite: {fileID: 21300000, guid: d114421361607e04aae047214d8b2046, type: 3}
+  particle: {fileID: 5448884044672425415, guid: 7400603c42a5f194f8afa4f1082975b6, type: 3}
   <coords>k__BackingField: {x: 0, y: 0}
 --- !u!114 &3673336292923248601
 MonoBehaviour:

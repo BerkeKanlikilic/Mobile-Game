@@ -37,7 +37,7 @@ TextureImporter:
     filterMode: 1
     aniso: 1
     mipBias: 0
-    wrapU: 1
+    wrapU: 2
     wrapV: 1
     wrapW: 1
   nPOTScale: 0
@@ -45,7 +45,7 @@ TextureImporter:
   compressionQuality: 50
   spriteMode: 1
   spriteExtrude: 1
-  spriteMeshType: 1
+  spriteMeshType: 0
   alignment: 5
   spritePivot: {x: 1, y: 0.5}
   spritePixelsToUnits: 100

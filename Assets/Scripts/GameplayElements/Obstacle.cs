@@ -21,6 +21,8 @@ public class Obstacle : MonoBehaviour, IFallable
     public Sprite crackedVaseSprite; // Array to hold different sprite based on health
     private SpriteRenderer spriteRenderer; // Sprite renderer component
 
+    [SerializeField] private GameObject particle;
+
     [field: SerializeField] public Vector2Int coords { get; private set; }
 
     private void Awake()
@@ -53,7 +55,7 @@ public class Obstacle : MonoBehaviour, IFallable
                 doesFallDown = true;
                 health = 2;
                 break;
-                // Add future types here with their properties
+            // Add future types here with their properties
         }
     }
 
@@ -78,16 +80,19 @@ public class Obstacle : MonoBehaviour, IFallable
             damage = 1;
         }
 
-        if (damageByTNT && !isAffectedByTNT) return; // If it's TNT damage and this obstacle isn't affected by TNT, then return
-        if (!damageByTNT && !isAffectedByBlast) return; // If it's blast damage and this obstacle isn't affected by blast, then return
+        if (damageByTNT && !isAffectedByTNT)
+            return; // If it's TNT damage and this obstacle isn't affected by TNT, then return
+        if (!damageByTNT && !isAffectedByBlast)
+            return; // If it's blast damage and this obstacle isn't affected by blast, then return
 
         health -= damage;
 
         // If health reaches zero, the obstacle is destroyed
         if (health <= 0)
         {
-            GridManager.instance.UpdateCell(coords.x, coords.y, null);
-            GridManager.instance.DecreaseObstacleCount(obstacleType);
+            GridManager.Instance.UpdateCell(coords.x, coords.y, null);
+            GridManager.Instance.DecreaseObstacleCount(obstacleType);
+            SpawnParticle();
             Destroy(gameObject);
         }
 
@@ -103,22 +108,26 @@ public class Obstacle : MonoBehaviour, IFallable
         spriteRenderer.sprite = crackedVaseSprite;
     }
 
-    public void FallTo(Vector2Int newCoords, float speed, float spriteSize, Vector2 gridOrigin, float delay, float originalHeight, float gap)
+    public void FallTo(Vector2Int newCoords, float speed, float spriteSize, Vector2 gridOrigin, float delay,
+        float originalHeight, float gap)
     {
         coords = newCoords;
-        float distance = Vector3.Distance(transform.position, new Vector3(gridOrigin.x + newCoords.x * spriteSize, gridOrigin.y + newCoords.y * spriteSize, 0));
+        float distance = Vector3.Distance(transform.position,
+            new Vector3(gridOrigin.x + newCoords.x * spriteSize, gridOrigin.y + newCoords.y * spriteSize, 0));
         float duration = distance / speed;
         StartCoroutine(FallCoroutine(newCoords, duration, spriteSize, gridOrigin, delay, originalHeight, gap));
     }
 
-    private IEnumerator FallCoroutine(Vector2Int newCoords, float duration, float spriteSize, Vector2 gridOrigin, float delay, float originalHeight, float gap)
+    private IEnumerator FallCoroutine(Vector2Int newCoords, float duration, float spriteSize, Vector2 gridOrigin,
+        float delay, float originalHeight, float gap)
     {
-        GridManager.instance.IncrementMovingCubeCount();
+        GridManager.Instance.IncrementMovingCubeCount();
 
         yield return new WaitForSeconds(delay);
 
         float additionalYOffset = newCoords.y >= originalHeight ? gap : 0;
-        Vector3 targetPosition = new Vector3(gridOrigin.x + newCoords.x * spriteSize, gridOrigin.y + newCoords.y * spriteSize + additionalYOffset, 0);
+        Vector3 targetPosition = new Vector3(gridOrigin.x + newCoords.x * spriteSize,
+            gridOrigin.y + newCoords.y * spriteSize + additionalYOffset, 0);
         float elapsedTime = 0;
         Vector3 startingPosition = transform.position;
 
@@ -128,8 +137,17 @@ public class Obstacle : MonoBehaviour, IFallable
             elapsedTime += Time.deltaTime;
             yield return null;
         }
+
         transform.position = targetPosition;
 
-        GridManager.instance.DecrementMovingCubeCount();
+        GridManager.Instance.DecrementMovingCubeCount();
+    }
+
+    public void SpawnParticle()
+    {
+        var particleBox = Instantiate(particle,
+            new Vector3(gameObject.transform.position.x, gameObject.transform.position.y, 0),
+            Quaternion.identity);
+        Destroy(particleBox, 3);
     }
 }

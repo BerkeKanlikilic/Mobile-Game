@@ -17,7 +17,6 @@ public class Cube : MonoBehaviour, IFallable
     public GameObject[] particles; // Explosion particles
     public CubeType cubeType;
     private SpriteRenderer spriteRenderer;
-    // Variable to keep track if the TNT sprite is active
     public bool isTNTActive = false;
 
     [field: SerializeField] public Vector2Int coords { get; private set; }
@@ -64,10 +63,10 @@ public class Cube : MonoBehaviour, IFallable
     private void OnMouseDown()
     {
         // Do not handle tap if any cube is moving
-        if (GridManager.instance.isAnyCubeMoving) return;
+        if (GridManager.Instance.isAnyCubeMoving) return;
 
         // Notify GridManager that this cube was tapped
-        GridManager.instance.HandleCellTap(gameObject);
+        GridManager.Instance.HandleCellTap(gameObject);
     }
 
     public void FallTo(Vector2Int newCoords, float speed, float spriteSize, Vector2 gridOrigin, float delay, float originalHeight, float gap)
@@ -80,7 +79,7 @@ public class Cube : MonoBehaviour, IFallable
 
     private IEnumerator FallCoroutine(Vector2Int newCoords, float duration, float spriteSize, Vector2 gridOrigin, float delay, float originalHeight, float gap)
     {
-        GridManager.instance.IncrementMovingCubeCount();
+        GridManager.Instance.IncrementMovingCubeCount();
 
         yield return new WaitForSeconds(delay);
 
@@ -97,12 +96,13 @@ public class Cube : MonoBehaviour, IFallable
         }
         transform.position = targetPosition;
 
-        GridManager.instance.DecrementMovingCubeCount();
+        GridManager.Instance.DecrementMovingCubeCount();
     }
 
     public void SpawnParticle()
     {
-        GameObject particle = Instantiate(particles[(int)cubeType], new Vector3(gameObject.transform.position.x, gameObject.transform.position.y, 0), Quaternion.identity);
+        GameObject particle = Instantiate(particles[(int)cubeType],
+            new Vector3(gameObject.transform.position.x, gameObject.transform.position.y, 0), Quaternion.identity);
         Destroy(particle, 3);
     }
 }

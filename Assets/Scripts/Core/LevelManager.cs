@@ -13,31 +13,30 @@ public class LevelManager
         this.originalHeight = originalHeight;
     }
 
-    // Call this method whenever a move is made in the game.
     public void OnMoveMade(GameObject[,] updatedGrid)
     {
         movesLeft--;
-        //Debug.Log($"Remaining Moves: {movesLeft}");
+        Debug.Log($"Remaining Moves: {movesLeft}");
         CheckGameStatus(updatedGrid);
     }
 
-    // Private method to check the game status
     private void CheckGameStatus(GameObject[,] updatedGrid)
     {
         if (movesLeft <= 0)
         {
             if (AreObstaclesLeft(updatedGrid))
             {
-                // Handle the lose condition
                 HandleLoseCondition();
             }
             else
             {
-                // Handle the win condition
                 HandleWinCondition();
             }
-        } else {
-            if(!AreObstaclesLeft(updatedGrid)){
+        }
+        else
+        {
+            if (!AreObstaclesLeft(updatedGrid))
+            {
                 HandleWinCondition();
             }
         }
@@ -48,7 +47,6 @@ public class LevelManager
         this.grid = newGrid;
     }
 
-    // Check if there are any obstacles left on the grid
     private bool AreObstaclesLeft(GameObject[,] updatedGrid)
     {
         foreach (GameObject obj in updatedGrid)
@@ -58,22 +56,26 @@ public class LevelManager
                 return true;
             }
         }
+
         return false;
     }
 
-    // Handle the win condition
     private void HandleWinCondition()
     {
         Debug.Log("You Won!");
-        GridManager.instance.UpdateTapAllowance(false);
-        // Implement further logic for handling win condition
+        GridManager.Instance.UpdateTapAllowance(false);
+
+        int currentLevel = GameManager.Instance.GetCurrentLevel();
+        LevelDataManager.Instance?.SetLevelState(currentLevel, LevelState.Unlocked);
+
+        UIManager.Instance.WinLoadingScene();
     }
 
-    // Handle the lose condition
     private void HandleLoseCondition()
     {
         Debug.Log("You Lost!");
-        GridManager.instance.UpdateTapAllowance(false);
-        // Implement further logic for handling lose condition
+        GridManager.Instance.UpdateTapAllowance(false);
+
+        UIManager.Instance.LoseScene();
     }
 }
