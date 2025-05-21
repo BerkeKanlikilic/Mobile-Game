@@ -51,4 +51,4 @@ This Unity project was developed for a Case Project. The game is a simple, level
 
 ---
 
-*Developed as a Case Project – 2025.*
+*Developed as a Case Project – 2024.*
