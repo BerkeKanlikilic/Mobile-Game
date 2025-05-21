@@ -18,3 +18,5 @@
 
 # Ignore VS Code directory
 .vscode/
+.vs
+.idea
